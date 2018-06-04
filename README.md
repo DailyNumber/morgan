@@ -116,6 +116,8 @@ morgan(format, {
 })
 ```
 
+This works with buffering as well. The `stream.write()` method should expect an array of logs.
+
 #### Predefined Formats
 
 There are various pre-defined formats provided:

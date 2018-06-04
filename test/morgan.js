@@ -1190,7 +1190,7 @@ describe('morgan()', function () {
   })
 
   describe('with buffer option', function () {
-    it('should flush log periodically', function (done) {
+    it('should flush log periodically as string', function (done) {
       var cb = after(2, function (err, res, log) {
         if (err) return done(err)
         assert.equal(log, 'GET /first\nGET /second\n')
@@ -1200,6 +1200,37 @@ describe('morgan()', function () {
       })
       var server = createServer(':method :url', {
         buffer: true,
+        stream: {write: writeLog}
+      })
+      var time = Date.now()
+
+      function writeLog (log) {
+        cb(null, null, log)
+      }
+
+      request(server)
+        .get('/first')
+        .expect(200, function (err) {
+          if (err) return cb(err)
+          request(server)
+            .get('/second')
+            .expect(200, cb)
+        })
+    })
+
+    it('should flush log periodically as array', function (done) {
+      var cb = after(2, function (err, res, log) {
+        if (err) return done(err)
+        assert.ok(Array.isArray(log))
+        assert.equal(log[0], 'GET /first')
+        assert.equal(log[1], 'GET /second')
+        assert.ok(Date.now() - time >= 1000)
+        assert.ok(Date.now() - time <= 1100)
+        done()
+      })
+      var server = createServer(':method :url', {
+        buffer: true,
+        raw: true,
         stream: {write: writeLog}
       })
       var time = Date.now()

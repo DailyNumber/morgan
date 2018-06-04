@@ -101,7 +101,7 @@ function morgan (format, options) {
       : buffer
 
     // swap the stream
-    stream = createBufferStream(stream, interval)
+    stream = createBufferStream(stream, interval, raw)
   }
 
   return function logger (req, res, next) {
@@ -406,14 +406,18 @@ function compile (format) {
  * @public
  */
 
-function createBufferStream (stream, interval) {
+function createBufferStream (stream, interval, raw) {
   var buf = []
   var timer = null
 
   // flush function
   function flush () {
     timer = null
-    stream.write(buf.join(''))
+    if (raw) {
+      stream.write(buf)
+    } else {
+      stream.write(buf.join(''))
+    }
     buf.length = 0
   }
 
