@@ -879,19 +879,44 @@ describe('morgan()', function () {
       it('should log result of function', function (done) {
         var cb = after(2, function (err, res, line) {
           if (err) return done(err)
-          assert.equal(line, 'GET / 200')
+          assert.equal(line, 'GET / 200\n')
           done()
         })
 
-        var stream = createLineStream(function (line) {
-          cb(null, null, line)
-        })
+        function writeLog (log) {
+          cb(null, null, log)
+        }
 
         function format (tokens, req, res) {
           return [req.method, req.url, res.statusCode].join(' ')
         }
 
-        request(createServer(format, { stream: stream }))
+        request(createServer(format, { stream: {write: writeLog} }))
+          .get('/')
+          .expect(200, cb)
+      })
+
+      it('should log result of function without newline', function (done) {
+        var cb = after(2, function (err, res, line) {
+          if (err) return done(err)
+          assert.equal(line, 'GET / 200')
+          done()
+        })
+
+        function writeLog (log) {
+          cb(null, null, log)
+        }
+
+        function format (tokens, req, res) {
+          return [req.method, req.url, res.statusCode].join(' ')
+        }
+
+        var server = createServer(format, {
+          raw: true,
+          stream: {write: writeLog}
+        });
+
+        request(server)
           .get('/')
           .expect(200, cb)
       })

@@ -88,6 +88,34 @@ morgan('combined', {
 
 Output stream for writing log lines, defaults to `process.stdout`.
 
+##### raw
+
+By default Morgan sends strings to `stream.write()`. Setting `raw` to true causes
+the unmodified result of the format function is passed to `stream.write()`. Using this
+setting plus a custom format function and a custom stream allows complete
+control over how the logging is implemented.
+
+<!-- eslint-disable no-undef -->
+
+```js
+// EXAMPLE: send object to custom logging function myLogger
+
+function format(tokens, req, res) {
+  return {
+    method: tokens.method(req, res),
+    url: tokens.url(req, res),
+    status: tokens.status(req, res),
+    contentLength: tokens.res(req, res, 'content-length'),
+    responseTime: tokens['response-time'](req, res)
+  }
+}
+
+morgan(format, {
+  raw: true,
+  stream: {write: myLogger}
+})
+```
+
 #### Predefined Formats
 
 There are various pre-defined formats provided:

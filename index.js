@@ -78,6 +78,10 @@ function morgan (format, options) {
   // check if log entry should be skipped
   var skip = opts.skip || false
 
+  // configure if log should convert formatted log to
+  // string before writing to stream
+  var raw = opts.raw || false
+
   // format function
   var formatLine = typeof fmt !== 'function'
     ? getFormatFunction(fmt)
@@ -127,7 +131,10 @@ function morgan (format, options) {
       }
 
       debug('log request')
-      stream.write(line + '\n')
+      if (!raw) {
+        line = line + '\n'
+      }
+      stream.write(line)
     };
 
     if (immediate) {
